@@ -17,6 +17,7 @@ package PP2PLink
 
 import "fmt"
 import "net"
+import "strings"
 
 type PP2PLink_Req_Message struct {
 	To      string
@@ -69,20 +70,27 @@ func (module PP2PLink) Start(address string) {
 				// e passa para cima
 				for {
 					buf := make([]byte, 1024)
-					len, err := conn.Read(buf)
+					Len, err := conn.Read(buf)
 
 					if err != nil {
 						continue
 					}
 
-					content := make([]byte, len)
+					content := make([]byte, Len)
 					copy(content, buf)
 
-					msg := PP2PLink_Ind_Message{
-						From:    conn.RemoteAddr().String(),
-						Message: string(content)}
+					for _,actual := range strings.Split(string(content), "@$@"){
+						if len(actual) == 0 {
+							continue
+						}
 
-					module.Ind <- msg
+						msg := PP2PLink_Ind_Message{
+							From:    conn.RemoteAddr().String(),
+							Message: string(actual)}
+
+						module.Ind <- msg
+						// fmt.Println(msg)
+					}
 				}
 			}()
 		}
@@ -114,6 +122,6 @@ func (module PP2PLink) Send(message PP2PLink_Req_Message) {
 		}
 		module.Cache[message.To] = conn
 	}
-	
-	fmt.Fprintf(conn, message.Message)
+
+	fmt.Fprintf(conn, message.Message+"@$@")
 }

@@ -1,7 +1,7 @@
 package BEB
 
 import . "../Link"
-
+// import "fmt"
 
 
 func Broadcast(address string, addresses []string, msgs chan string) chan string{
@@ -21,7 +21,9 @@ func Broadcast(address string, addresses []string, msgs chan string) chan string
 					continue
 				}
 
-				link.Req <- PP2PLink_Req_Message{addr, address+"&-&"+msg}
+				M := PP2PLink_Req_Message{addr, address+"&-&"+msg}
+				link.Req <- M
+				// fmt.Println(M)
 			}
 			// }()
 		}
@@ -30,6 +32,7 @@ func Broadcast(address string, addresses []string, msgs chan string) chan string
 	go func(){
 		for {
 			m:=<-link.Ind
+			// fmt.Println(m)
 			// src, msg := s[0], s[1]
 			// src = src
 			

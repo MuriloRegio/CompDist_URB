@@ -78,10 +78,11 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 
 					src, msg := tmp[0], tmp[1]
 
-					_, err 	 := ack[msg]
+					f, err 	 := ack[msg]
 
-					if err{
+					if f == nil || err{
 						ack[msg] = set.New()
+						ack[msg].Insert(address)
 					}
 
 					ack[msg].Insert(src)
@@ -94,7 +95,9 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 					pending.Insert(new_pending)
 					sent_msgs <- msg
 
-					propagate_msgs <- msg
+					if f == nil {
+						propagate_msgs <- msg	
+					}
 
 
 				default:
@@ -102,5 +105,6 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 			}
 		}
 	}()
+	
 	return propagate_msgs
 }

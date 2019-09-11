@@ -5,13 +5,16 @@ import "os"
 import "./URB"
 import "strconv"
 import "math/rand"
+import "time"
 	
-var max = 1000
+var max = 10
 var s2  = rand.NewSource(42)
 var r2  = rand.New(s2)
 
 func body (channel chan string) {
 	fail := r2.Intn(max)
+
+	fmt.Println(fail)
 
 	for i := 0; i < max; i++ {
 		msg := strconv.Itoa(i)
@@ -54,6 +57,7 @@ func main (){
 	}
 
 	address = addresses[id]
+	fmt.Println(address)
 
 	for i := 0; i <id; i++ {
 		_ = r2.Intn(max)
@@ -63,12 +67,14 @@ func main (){
 
 	rcvd  := URB.Init(address, addresses, input)
 
+	time.Sleep(3*time.Second)
+
 	go body(input)
 
 	for { 
 		select {
 			case msg := <-rcvd:
-				fmt.Println(msg)
+				fmt.Println("->"+msg)
 			default:
 				continue
 		}
