@@ -2,6 +2,7 @@ package BEB
 
 import . "../Link"
 // import "fmt"
+import "strings"
 
 
 func Broadcast(address string, addresses []string, msgs chan string) chan string{
@@ -21,9 +22,20 @@ func Broadcast(address string, addresses []string, msgs chan string) chan string
 					continue
 				}
 
-				M := PP2PLink_Req_Message{addr, address+"&-&"+msg}
+				fail := false
+
+				if strings.Contains(msg, "fail"){
+					fail = true
+					msg  = strings.Replace(msg,"fail","rewritten",1)
+				}
+
+				M := PP2PLink_Req_Message{addr, address+"&-&"+msg+"@$@"}
 				link.Req <- M
 				// fmt.Println(M)
+				if fail{
+					break
+				}
+
 			}
 			// }()
 		}

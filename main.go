@@ -13,24 +13,33 @@ var r2  = rand.New(s2)
 
 func body (channel chan string) {
 	fail := r2.Intn(max)
+	die  := r2.Intn(N) == id
 
 	fmt.Println(fail)
+	fmt.Println(die)
 
 	for i := 0; i < max; i++ {
 		msg := strconv.Itoa(i)
 
-		if i == fail {
+		if i == fail && die{
 			msg = "fail"
 		}
 
 		msg = msg+"-"+address
 		channel <- msg
+
+		if i == fail && die{
+			time.Sleep(5 * time.Millisecond)
+			a := 1
+			a  = a / (1 - a)
+		}
 	}
 }
 
-var N = 10
+var N = 4
 var addresses = []string{}
 var address = ""
+var id = 0
 
 func mkConnections() {
 	for i := 0; i < N; i++ {
@@ -39,10 +48,19 @@ func mkConnections() {
 }
 
 func main (){
-	mkConnections()
-
 	args  := os.Args[1:]
-	id 	  := 0
+
+	if len(args) > 1 {
+		index, err := strconv.Atoi(args[1])
+
+		if err != nil{
+			fmt.Println("Invalid parameter:\t"+args[1])
+			return
+		}
+		N = index
+	}
+
+	mkConnections()
 
 	if len(args) > 0 {
 		index, err := strconv.Atoi(args[0])
@@ -56,12 +74,13 @@ func main (){
 		id = 0
 	}
 
+
 	address = addresses[id]
 	fmt.Println(address)
 
-	for i := 0; i <id; i++ {
-		_ = r2.Intn(max)
-	}
+	// for i := 0; i <id; i++ {
+	// 	_ = r2.Intn(max)
+	// }
 
 	input := make(chan string)
 
@@ -71,12 +90,17 @@ func main (){
 
 	go body(input)
 
-	for { 
-		select {
-			case msg := <-rcvd:
-				fmt.Println("->"+msg)
-			default:
-				continue
+	go func() {
+		for { 
+			select {
+				case msg := <-rcvd:
+					fmt.Println("->"+msg)
+				default:
+					continue
+			}
 		}
-	}
+	}()
+
+	
+	time.Sleep(3*time.Second)
 }

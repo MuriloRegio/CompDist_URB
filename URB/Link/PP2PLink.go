@@ -79,10 +79,17 @@ func (module PP2PLink) Start(address string) {
 					content := make([]byte, Len)
 					copy(content, buf)
 
+					if !strings.Contains(string(content), "@$@"){
+						fmt.Println("WHY")
+					}
+
 					for _,actual := range strings.Split(string(content), "@$@"){
 						if len(actual) == 0 {
 							continue
 						}
+
+						// fmt.Println("!!!!!!!!"+string(content))
+						// fmt.Println("????????"+actual)
 
 						msg := PP2PLink_Ind_Message{
 							From:    conn.RemoteAddr().String(),
@@ -123,5 +130,5 @@ func (module PP2PLink) Send(message PP2PLink_Req_Message) {
 		module.Cache[message.To] = conn
 	}
 
-	fmt.Fprintf(conn, message.Message+"@$@")
+	fmt.Fprintf(conn, message.Message)
 }

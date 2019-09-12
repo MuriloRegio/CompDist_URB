@@ -16,7 +16,7 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 	ack			:= make(map[string] *set.Set)
 
 
-	deliver 	:= make(chan pending_data)
+	deliver 	:= make(chan string)
 
 
 	N 			:= len(addresses)
@@ -24,9 +24,6 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 
 	sent_msgs := make(chan string)
 	rcvd_msgs := BEB.Broadcast(address, addresses, sent_msgs)
-
-
-	propagate_msgs := make(chan string)
 
 
 	fmt.Println(delivered.Len())
@@ -54,7 +51,7 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 				}
 
 				delivered.Insert(m)
-				deliver <- pending_message
+				deliver <- m
 			}
 
 			select {
@@ -76,13 +73,15 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 				case rcvd := <- rcvd_msgs:
 					tmp := strings.Split(rcvd, "&-&")
 
+					// fmt.Println(rcvd)
 					src, msg := tmp[0], tmp[1]
 
-					f, err 	 := ack[msg]
+					f, _ 	 := ack[msg]
 
-					if f == nil || err{
+					if f == nil{
 						ack[msg] = set.New()
 						ack[msg].Insert(address)
+						sent_msgs <- msg
 					}
 
 					ack[msg].Insert(src)
@@ -93,12 +92,6 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 					}
 
 					pending.Insert(new_pending)
-					sent_msgs <- msg
-
-					if f == nil {
-						propagate_msgs <- msg	
-					}
-
 
 				default:
 					continue
@@ -106,5 +99,5 @@ func Init(address string, addresses []string, input_msgs chan string) chan strin
 		}
 	}()
 	
-	return propagate_msgs
+	return deliver
 }
